@@ -1,0 +1,162 @@
+.tournament-map {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, var(--green-dark) 0%, var(--green-mid) 100%);
+  padding: 16px;
+  overflow-y: auto;
+  gap: 12px;
+}
+
+.tm-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tm-team-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--panel-bg);
+  padding: 8px 14px;
+  border-radius: 12px;
+  font-weight: 800;
+}
+
+.tm-flag {
+  font-size: 1.6rem;
+}
+
+.tm-team-name {
+  font-size: 1.1rem;
+}
+
+.tm-streak {
+  color: var(--gold);
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.tm-title {
+  font-family: var(--font-display);
+  color: var(--white);
+  text-align: center;
+  font-size: 1.6rem;
+  text-shadow: 1px 2px 0 rgba(0,0,0,0.3);
+}
+
+.tm-stages {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.tm-stage {
+  background: var(--panel-bg);
+  border-radius: 14px;
+  padding: 12px 16px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  animation: fadeIn 0.4s ease-out both;
+  position: relative;
+}
+
+.tm-stage.locked {
+  opacity: 0.5;
+}
+
+.tm-stage.won {
+  border-left: 5px solid var(--green-light);
+}
+
+.tm-stage.current {
+  border-left: 5px solid var(--gold);
+  animation: pulse 1.5s infinite;
+}
+
+.tm-stage-label {
+  font-weight: 800;
+  font-size: 0.95rem;
+  flex: 1;
+  min-width: 120px;
+}
+
+.tm-stage-opponent {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.tm-stage-score {
+  font-size: 0.85rem;
+  color: var(--green-mid);
+  font-weight: 800;
+}
+
+.tm-locked {
+  font-size: 1.2rem;
+}
+
+.tm-play-btn {
+  background: var(--gold);
+  color: #222;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  padding: 8px 24px;
+  border-radius: 30px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+  margin-left: auto;
+}
+
+.tm-play-btn:active {
+  background: var(--gold-dark);
+}
+
+.tm-champion {
+  text-align: center;
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+  color: #222;
+  padding: 20px;
+  border-radius: 16px;
+  animation: bounceIn 0.6s ease-out;
+}
+
+.tm-champion h2 {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  margin-bottom: 4px;
+}
+
+.tm-footer {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  padding: 8px 0;
+}
+
+.tm-trophy-btn {
+  background: var(--gold);
+  color: #222;
+  padding: 10px 20px;
+  border-radius: 30px;
+  font-size: 1rem;
+}
+
+.tm-bank-btn {
+  background: rgba(255,255,255,0.15);
+  color: var(--white);
+  padding: 10px 16px;
+  border-radius: 30px;
+  font-size: 0.9rem;
+}
+
+.tm-reset-btn {
+  background: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.7);
+  padding: 10px 16px;
+  border-radius: 30px;
+  font-size: 0.85rem;
+}

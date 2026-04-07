@@ -1,0 +1,18 @@
+{
+  "name": "World Cup Quest",
+  "short_name": "WCQuest",
+  "description": "A cooperative maths learning game for Tommy and Maddy",
+  "start_url": "/world-cup-quest/",
+  "scope": "/world-cup-quest/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#2d8b46",
+  "theme_color": "#2d8b46",
+  "icons": [
+    {
+      "src": "assets/equipment/ball.png",
+      "sizes": "48x48",
+      "type": "image/png"
+    }
+  ]
+}

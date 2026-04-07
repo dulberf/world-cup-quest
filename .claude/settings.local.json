@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(unzip -l \"C:/Projects/world-cup-quest/kenney_sports-pack.zip\")",
+      "Bash(unzip -o kenney_sports-pack.zip \"PNG/Blue/*\" -d temp_extract)",
+      "Bash(unzip -o kenney_sports-pack.zip \"PNG/Red/*\" -d temp_extract)",
+      "Bash(unzip -o kenney_sports-pack.zip \"PNG/Special/*\" -d temp_extract)",
+      "Bash(unzip -o kenney_sports-pack.zip \"PNG/Equipment/*\" -d temp_extract)",
+      "Bash(unzip -o kenney_sports-pack.zip \"PNG/Elements/*\" -d temp_extract)",
+      "Bash(cp \"temp_extract/PNG/Blue/characterBlue \\(1\\).png\" public/assets/players/tommy.png)",
+      "Bash(cp \"temp_extract/PNG/Blue/characterBlue \\(2\\).png\" public/assets/players/tommy_run1.png)",
+      "Bash(cp \"temp_extract/PNG/Blue/characterBlue \\(3\\).png\" public/assets/players/tommy_run2.png)",
+      "Bash(cp \"temp_extract/PNG/Blue/characterBlue \\(5\\).png\" public/assets/players/maddy.png)",
+      "Bash(cp \"temp_extract/PNG/Blue/characterBlue \\(6\\).png\" public/assets/players/maddy_run1.png)",
+      "Bash(npm create:*)",
+      "Bash(mkdir -p src)",
+      "Bash(npm init:*)",
+      "Bash(npm install:*)",
+      "Bash(npx vite:*)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(npx kill-port:*)",
+      "Bash(taskkill //F //IM node.exe)",
+      "Bash(unzip -o kenney_sports-pack.zip \"PNG/Blue/*\" -d temp_sprites)",
+      "Bash(unzip -o kenney_sports-pack.zip \"PNG/Special/*\" -d temp_sprites)",
+      "Bash(unzip -l \"C:/Projects/world-cup-quest/kenney_toon-characters.zip\")",
+      "Bash(netstat -ano)",
+      "Bash(curl -s \"http://localhost:5174/world-cup-quest/\")",
+      "Bash(gh auth:*)"
+    ]
+  }
+}
