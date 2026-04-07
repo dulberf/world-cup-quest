@@ -3,17 +3,16 @@ import {
   TEAMS,
   STAGE_LABELS,
   KEEPER_SAVE_RATES,
+  INTERCEPT_SCORE_RATES,
   getOpponentForStage,
 } from '../gameState.js';
-import { drawQuestion, generateBonusQuestion } from '../questions.js';
+import { drawQuestion } from '../questions.js';
 import PitchCanvas from './PitchCanvas.jsx';
 import Confetti from './Confetti.jsx';
 import './Match.css';
 
 const GOALS_TO_WIN = 3;
-const MATCH_DURATION = 300;
 const NORMAL_PASSES = 3;
-const SKILL_PASSES = 2;
 const RUN_IN_DURATION = 1400; // ms player runs into position
 
 // Time pressure per stage (seconds to answer, null = unlimited)
@@ -29,6 +28,7 @@ export default function Match({ gameState, onMatchEnd, onQuit }) {
   const team = TEAMS.find((t) => t.id === gameState.team);
   const opponent = getOpponentForStage(gameState.currentStage, gameState.team);
   const saveRate = KEEPER_SAVE_RATES[gameState.currentStage];
+  const interceptRate = INTERCEPT_SCORE_RATES[gameState.currentStage];
   const stageLabel = STAGE_LABELS[gameState.currentStage];
   const questionTimeLimit = QUESTION_TIME[gameState.currentStage];
 
@@ -49,6 +49,8 @@ export default function Match({ gameState, onMatchEnd, onQuit }) {
   // phases: ready | runningIn | question | result | shooting | goalCelebration | saved | intercepted | bonus | matchEnd
   const [animState, setAnimState] = useState('idle');
   const [keeperDiving, setKeeperDiving] = useState(null);
+  const [shotOutcome, setShotOutcome] = useState(null); // 'save' | 'goal'
+  const [oppScoredName, setOppScoredName] = useState(null);
   const [showConfetti, setShowConfetti] = useState(false);
 
   // --- Question state ---
@@ -62,10 +64,6 @@ export default function Match({ gameState, onMatchEnd, onQuit }) {
   const [questionTimer, setQuestionTimer] = useState(null);
   const questionTimerRef = useRef(null);
 
-  // --- Match timer ---
-  const [timeLeft, setTimeLeft] = useState(MATCH_DURATION);
-  const matchTimerRef = useRef(null);
-
   // --- Stats ---
   const statsRef = useRef({
     tommyGoals: 0, maddyGoals: 0,
@@ -73,24 +71,7 @@ export default function Match({ gameState, onMatchEnd, onQuit }) {
     tommyTotal: 0, maddyTotal: 0,
   });
 
-  // ---- Match timer ----
-  useEffect(() => {
-    matchTimerRef.current = setInterval(() => {
-      setTimeLeft(t => {
-        if (t <= 1) { clearInterval(matchTimerRef.current); endMatch(); return 0; }
-        return t - 1;
-      });
-    }, 1000);
-    return () => clearInterval(matchTimerRef.current);
-  }, []);
-
   const endMatch = useCallback(() => setPhase('matchEnd'), []);
-
-  useEffect(() => {
-    if (playerScore >= GOALS_TO_WIN || oppScore >= GOALS_TO_WIN) {
-      setTimeout(endMatch, 1500);
-    }
-  }, [playerScore, oppScore, endMatch]);
 
   // ---- Fairness: work out whose turn it is within an attack ----
   function playerForPass(passIndex, starter) {
@@ -187,20 +168,30 @@ export default function Match({ gameState, onMatchEnd, onQuit }) {
       setResultMsg(timedOut ? `Time's up! The answer was ${question.answer}` : `Intercepted! The answer was ${question.answer}`);
       setPhase('intercepted');
 
-      // Occasional opponent counter
-      if (Math.random() < 0.15) {
-        setTimeout(() => setOppScore(s => s + 1), 800);
+      // Opponent scores based on stage difficulty
+      const oppScores = Math.random() < interceptRate;
+      const newOppScore = oppScores ? oppScore + 1 : oppScore;
+      if (oppScores) {
+        setTimeout(() => {
+          setOppScore(newOppScore);
+          setOppScoredName(opponent.name);
+          setAnimState('oppGoal');
+        }, 800);
       }
 
       setTimeout(() => {
         setAnimState('idle');
         setResultMsg('');
+        setOppScoredName(null);
         setMaxPasses(NORMAL_PASSES);
-        // Flip attack starter on interception
-        const nextStarter = attackStarter === 'tommy' ? 'maddy' : 'tommy';
-        setAttackStarter(nextStarter);
-        startAttack(nextStarter);
-      }, 2500);
+        if (newOppScore >= GOALS_TO_WIN) {
+          endMatch();
+        } else {
+          const nextStarter = attackStarter === 'tommy' ? 'maddy' : 'tommy';
+          setAttackStarter(nextStarter);
+          startAttack(nextStarter);
+        }
+      }, 2800);
     }
   }
 
@@ -209,6 +200,7 @@ export default function Match({ gameState, onMatchEnd, onQuit }) {
     const saved = Math.random() < saveRate;
     const diveDir = Math.random() < 0.5 ? 'left' : 'right';
     setKeeperDiving(diveDir);
+    setShotOutcome(saved ? 'save' : 'goal');
 
     setTimeout(() => {
       if (saved) {
@@ -216,6 +208,7 @@ export default function Match({ gameState, onMatchEnd, onQuit }) {
         setPhase('saved');
         setTimeout(() => {
           setKeeperDiving(null);
+          setShotOutcome(null);
           setAnimState('idle');
           setMaxPasses(NORMAL_PASSES);
           const nextStarter = attackStarter === 'tommy' ? 'maddy' : 'tommy';
@@ -228,39 +221,28 @@ export default function Match({ gameState, onMatchEnd, onQuit }) {
         const scorer = currentPlayer;
         if (scorer === 'tommy') statsRef.current.tommyGoals++;
         else statsRef.current.maddyGoals++;
-        setPlayerScore(s => s + 1);
+        const newPlayerScore = playerScore + 1;
+        setPlayerScore(newPlayerScore);
         setShowConfetti(true);
         setPhase('goalCelebration');
 
         setTimeout(() => {
           setShowConfetti(false);
           setKeeperDiving(null);
+          setShotOutcome(null);
           setAnimState('idle');
-          // Bonus question
-          setQuestion(generateBonusQuestion());
-          setSelectedAnswer(null);
-          setIsCorrect(null);
-          setHintLevel(0);
-          setPhase('bonus');
+          if (newPlayerScore >= GOALS_TO_WIN) {
+            endMatch();
+          } else {
+            const nextStarter = attackStarter === 'tommy' ? 'maddy' : 'tommy';
+            setAttackStarter(nextStarter);
+            startAttack(nextStarter);
+          }
         }, 2500);
       }
     }, 900);
   }
 
-  // ---- Bonus answer ----
-  function handleBonusAnswer(answer) {
-    const correct = answer === question.answer;
-    setSelectedAnswer(answer);
-    setIsCorrect(correct);
-    const nextMaxPasses = correct ? SKILL_PASSES : NORMAL_PASSES;
-    setMaxPasses(nextMaxPasses);
-
-    setTimeout(() => {
-      const nextStarter = attackStarter === 'tommy' ? 'maddy' : 'tommy';
-      setAttackStarter(nextStarter);
-      startAttack(nextStarter);
-    }, 1800);
-  }
 
   // ---- Finish match ----
   function handleFinishMatch() {
@@ -283,18 +265,11 @@ export default function Match({ gameState, onMatchEnd, onQuit }) {
     setOppScore(0);
     setPassCount(0);
     setMaxPasses(NORMAL_PASSES);
-    setTimeLeft(MATCH_DURATION);
     statsRef.current = { tommyGoals: 0, maddyGoals: 0, tommyCorrect: 0, maddyCorrect: 0, tommyTotal: 0, maddyTotal: 0 };
     setAttackStarter('tommy');
     startAttack('tommy');
-    clearInterval(matchTimerRef.current);
-    matchTimerRef.current = setInterval(() => {
-      setTimeLeft(t => { if (t <= 1) { clearInterval(matchTimerRef.current); endMatch(); return 0; } return t - 1; });
-    }, 1000);
   }
 
-  const formatTime = s => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`;
-  const timerWarning = timeLeft <= 60;
   const otherPlayer = currentPlayer === 'tommy' ? 'maddy' : 'tommy';
 
   return (
@@ -317,7 +292,7 @@ export default function Match({ gameState, onMatchEnd, onQuit }) {
             <span className="score-emoji">{opponent.emoji}</span>
           </div>
         </div>
-        <div className={`match-timer ${timerWarning ? 'warning' : ''}`}>{formatTime(timeLeft)}</div>
+        <div className="match-timer">First to {GOALS_TO_WIN}</div>
       </div>
 
       {/* Pitch */}
@@ -329,6 +304,7 @@ export default function Match({ gameState, onMatchEnd, onQuit }) {
           attackStarter={attackStarter}
           animState={animState}
           keeperDiving={keeperDiving}
+          shotOutcome={shotOutcome}
           phase={phase}
         />
       </div>
@@ -426,6 +402,9 @@ export default function Match({ gameState, onMatchEnd, onQuit }) {
           <div className="result-panel">
             <p className="result-msg intercepted">🛑 {resultMsg}</p>
             {question && <p className="explanation">{question.hint1}</p>}
+            {oppScoredName && (
+              <p className="result-msg opp-goal">😬 {oppScoredName} scores!</p>
+            )}
           </div>
         )}
 
@@ -447,44 +426,6 @@ export default function Match({ gameState, onMatchEnd, onQuit }) {
           </div>
         )}
 
-        {phase === 'bonus' && question && (
-          <div className="question-panel bonus">
-            <p className="bonus-label">✨ SKILL MOVE BONUS! ✨</p>
-            <p className="bonus-sub">Get it right — start your next attack closer to goal!</p>
-            <div className="equation-display">
-              <span className="equation-text">{question.display}</span>
-            </div>
-            <div className="options-grid">
-              {question.options.map((opt, i) => (
-                <button
-                  key={i}
-                  className={`option-btn bonus-opt ${
-                    selectedAnswer !== null
-                      ? opt === question.answer ? 'correct' : opt === selectedAnswer ? 'wrong' : ''
-                      : ''
-                  }`}
-                  onClick={() => selectedAnswer === null && handleBonusAnswer(opt)}
-                  disabled={selectedAnswer !== null}
-                >
-                  {opt}
-                </button>
-              ))}
-            </div>
-            {selectedAnswer !== null && (
-              <p className={`bonus-result ${isCorrect ? 'correct' : 'wrong'}`}>
-                {isCorrect ? '🚀 Next attack starts closer to goal!' : `The answer was ${question.answer}. Normal start!`}
-              </p>
-            )}
-            <button className="skip-btn" onClick={() => {
-              setMaxPasses(NORMAL_PASSES);
-              const nextStarter = attackStarter === 'tommy' ? 'maddy' : 'tommy';
-              setAttackStarter(nextStarter);
-              startAttack(nextStarter);
-            }}>
-              Skip bonus
-            </button>
-          </div>
-        )}
 
         {phase === 'matchEnd' && (
           <div className="match-end-panel">

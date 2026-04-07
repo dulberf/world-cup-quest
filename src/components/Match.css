@@ -314,6 +314,7 @@
   margin-bottom: 4px;
 }
 .result-msg.intercepted { color: #ef5350; }
+.result-msg.opp-goal { color: #ef5350; font-size: 1.2rem; margin-top: 6px; animation: pulse 0.5s infinite; }
 .result-msg.shooting { color: var(--gold-dark); animation: pulse 0.6s infinite; }
 .result-msg.saved { color: #ff9800; }
 .result-msg.goal {

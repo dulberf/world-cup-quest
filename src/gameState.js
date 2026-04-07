@@ -36,6 +36,17 @@ const KEEPER_SAVE_RATES = {
   final: 0.65,
 };
 
+// Chance the opponent scores when the kids get a question wrong
+const INTERCEPT_SCORE_RATES = {
+  group1: 0.20,
+  group2: 0.25,
+  group3: 0.30,
+  round16: 0.40,
+  quarter: 0.50,
+  semi: 0.65,
+  final: 0.80,
+};
+
 function getOpponentForStage(stage, playerTeam) {
   const others = TEAMS.filter((t) => t.id !== playerTeam);
   const stageIndex = TOURNAMENT_STAGES.indexOf(stage);
@@ -81,6 +92,7 @@ export {
   TOURNAMENT_STAGES,
   STAGE_LABELS,
   KEEPER_SAVE_RATES,
+  INTERCEPT_SCORE_RATES,
   getOpponentForStage,
   createInitialState,
   loadState,

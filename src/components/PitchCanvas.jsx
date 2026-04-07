@@ -92,6 +92,7 @@ export default function PitchCanvas({
   attackStarter,
   animState,
   keeperDiving,
+  shotOutcome,
   phase,
 }) {
   const canvasRef = useRef(null);
@@ -179,15 +180,25 @@ export default function PitchCanvas({
         ballTargetX = rX + 10;
         ballTargetY = rY + 50;
       } else if (animState === 'shooting') {
-        ballTargetX = keeperPosX; // fly straight at keeper's dive position
-        ballTargetY = 52;
+        if (shotOutcome === 'goal') {
+          // Ball flies directly to the open corner (opposite to keeper's dive)
+          ballTargetX = keeperDiving === 'left' ? w / 2 + 50 : w / 2 - 50;
+          ballTargetY = 10;
+        } else {
+          // Ball flies directly at the keeper
+          ballTargetX = keeperPosX;
+          ballTargetY = 36;
+        }
       } else if (animState === 'saved') {
-        ballTargetX = keeperPosX; // keeper holds it
+        ballTargetX = keeperPosX;
         ballTargetY = 36;
       } else if (animState === 'goal') {
-        // Keeper dived the wrong way — ball goes to the opposite corner
         ballTargetX = keeperDiving === 'left' ? w / 2 + 50 : w / 2 - 50;
         ballTargetY = 10;
+      } else if (animState === 'oppGoal') {
+        // Ball flies off the bottom of the screen
+        ballTargetX = w / 2;
+        ballTargetY = h + 60;
       } else if (animState === 'intercepted') {
         // Ball goes to the zombie on the same side as the passer
         if (currentPlayer === 'tommy') {
@@ -199,7 +210,7 @@ export default function PitchCanvas({
         }
       }
 
-      const ballSpeed = (animState === 'passing' || animState === 'shooting' || animState === 'saved' || animState === 'goal' || animState === 'intercepted') ? 0.18 : 0.12;
+      const ballSpeed = (animState === 'passing' || animState === 'shooting' || animState === 'saved' || animState === 'goal' || animState === 'intercepted' || animState === 'oppGoal') ? 0.18 : 0.12;
       p.ballX += (ballTargetX - p.ballX) * ballSpeed;
       p.ballY += (ballTargetY - p.ballY) * ballSpeed;
 
@@ -315,7 +326,7 @@ export default function PitchCanvas({
 
     draw();
     return () => cancelAnimationFrame(rafId);
-  }, [passCount, maxPasses, currentPlayer, attackStarter, animState, keeperDiving, phase]);
+  }, [passCount, maxPasses, currentPlayer, attackStarter, animState, keeperDiving, shotOutcome, phase]);
 
   return (
     <canvas
